@@ -1,0 +1,22 @@
+diff --git a/Source/CFStringEncoding.c b/Source/CFStringEncoding.c
+index 9692f22..a34e9c4 100644
+--- a/Source/CFStringEncoding.c
++++ b/Source/CFStringEncoding.c
+@@ -349,7 +349,7 @@ CFStringConvertStandardNameToEncoding (const char *name, CFIndex length)
+       int idx = 0;
+       while (idx < str_encoding_table_size)
+         {
+-          if (str_encoding_table[idx].winCodepage != codepage)
++          if (str_encoding_table[idx].winCodepage == codepage)
+             return str_encoding_table[idx].enc;
+           ++idx;
+         }
+@@ -360,7 +360,7 @@ CFStringConvertStandardNameToEncoding (const char *name, CFIndex length)
+       int idx = 0;
+       while (idx < str_encoding_table_size)
+         {
+-          if (str_encoding_table[idx].winCodepage != codepage)
++          if (str_encoding_table[idx].winCodepage == codepage)
+             return str_encoding_table[idx].enc;
+           ++idx;
+         }

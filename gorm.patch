@@ -1,0 +1,409 @@
+diff --git a/GormCore/GormMatrixEditor.m b/GormCore/GormMatrixEditor.m
+index 3c79646..0540732 100644
+--- a/GormCore/GormMatrixEditor.m
++++ b/GormCore/GormMatrixEditor.m
+@@ -51,12 +51,12 @@
+ @end
+ 
+ @interface NSForm (GormAdditions)
+-- (float) titleWidth;
++- (CGFloat) titleWidth;
+ @end
+ 
+ @implementation NSForm (GormAdditions)
+ 
+-- (float)titleWidth
++- (CGFloat)titleWidth
+ {
+   int i, count = [self numberOfRows];
+   float new_title_width = 0;
+diff --git a/GormCore/GormViewWindow.m b/GormCore/GormViewWindow.m
+index 683f966..1e1923f 100644
+--- a/GormCore/GormViewWindow.m
++++ b/GormCore/GormViewWindow.m
+@@ -163,7 +163,7 @@
+   _view = view;
+ 
+   [[self contentView] addSubview: _view];
+-  DESTROY(_delegate);
++  [self setDelegate:nil];
+   [self setDelegate: [[GormViewWindowDelegate alloc] initWithView: _view]];
+ }
+ 
+@@ -204,7 +204,7 @@
+ 
+ - (void) dealloc
+ {
+-  DESTROY(_delegate);
++  [self setDelegate:nil];
+   [super dealloc];
+ }
+ 
+diff --git a/GormCore/GormViewWithContentViewEditor.m b/GormCore/GormViewWithContentViewEditor.m
+index be9c688..f125579 100644
+--- a/GormCore/GormViewWithContentViewEditor.m
++++ b/GormCore/GormViewWithContentViewEditor.m
+@@ -243,7 +243,7 @@
+ #define MAX(A,B) ((A)>(B)?(A):(B))
+ #define MIN(A,B) ((A)<(B)?(A):(B))
+ 
+-int _sortViews(id view1, id view2, void *context)
++NSComparisonResult _sortViews(id view1, id view2, void *context)
+ {
+   BOOL isVertical = *((BOOL *)context);
+   int order = NSOrderedSame;
+diff --git a/Palettes/0Menus/GNUmakefile.preamble b/Palettes/0Menus/GNUmakefile.preamble
+index a18ea05..e5e7328 100644
+--- a/Palettes/0Menus/GNUmakefile.preamble
++++ b/Palettes/0Menus/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-0Menus_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Palettes/0Menus/GormMenuEditor.m b/Palettes/0Menus/GormMenuEditor.m
+index 9444db5..10fc154 100644
+--- a/Palettes/0Menus/GormMenuEditor.m
++++ b/Palettes/0Menus/GormMenuEditor.m
+@@ -37,7 +37,7 @@
+ @implementation NSMenu (GormMenuEditorAdditions)
+ - (BOOL) isVisible
+ {
+-  return [_aWindow isVisible];
++  return [[self window] isVisible];
+ }
+ @end
+ 
+diff --git a/Palettes/1Windows/GNUmakefile.preamble b/Palettes/1Windows/GNUmakefile.preamble
+index 5af9107..e5e7328 100644
+--- a/Palettes/1Windows/GNUmakefile.preamble
++++ b/Palettes/1Windows/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-1Windows_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Palettes/2Controls/GNUmakefile.preamble b/Palettes/2Controls/GNUmakefile.preamble
+index 4ef816d..e5e7328 100644
+--- a/Palettes/2Controls/GNUmakefile.preamble
++++ b/Palettes/2Controls/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-2Controls_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Palettes/3Containers/GNUmakefile.preamble b/Palettes/3Containers/GNUmakefile.preamble
+index c17823a..e5e7328 100644
+--- a/Palettes/3Containers/GNUmakefile.preamble
++++ b/Palettes/3Containers/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-3Containers_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Palettes/4Data/GNUmakefile.preamble b/Palettes/4Data/GNUmakefile.preamble
+index e9249b0..e5e7328 100644
+--- a/Palettes/4Data/GNUmakefile.preamble
++++ b/Palettes/4Data/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-4Data_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Plugins/GModel/GNUmakefile.preamble b/Plugins/GModel/GNUmakefile.preamble
+index beccc87..e5e7328 100644
+--- a/Plugins/GModel/GNUmakefile.preamble
++++ b/Plugins/GModel/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-GModel_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Plugins/Gorm/GNUmakefile.preamble b/Plugins/Gorm/GNUmakefile.preamble
+index 3afa7b6..e5e7328 100644
+--- a/Plugins/Gorm/GNUmakefile.preamble
++++ b/Plugins/Gorm/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-Gorm_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Plugins/Nib/GNUmakefile.preamble b/Plugins/Nib/GNUmakefile.preamble
+index 5c5abbb..e5e7328 100644
+--- a/Plugins/Nib/GNUmakefile.preamble
++++ b/Plugins/Nib/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-Nib_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file
+diff --git a/Plugins/Xib/GNUmakefile.preamble b/Plugins/Xib/GNUmakefile.preamble
+index 5c5abbb..e5e7328 100644
+--- a/Plugins/Xib/GNUmakefile.preamble
++++ b/Plugins/Xib/GNUmakefile.preamble
+@@ -1,21 +1,24 @@
+ # Additional include directories the compiler should search
+ ADDITIONAL_INCLUDE_DIRS += -I../..
+ 
+-ifeq ($(GNUSTEP_TARGET_OS),mingw32)
+-ADDITIONAL_LIB_DIRS += \
+-        -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+-        -L../../GormCore/$(GNUSTEP_OBJ_DIR)
++SHOULD_LINK = "no"
+ 
+-ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
++ifeq ($(GNUSTEP_TARGET_OS),mingw32)
++    SHOULD_LINK = "yes"
++endif
++ifeq ($(findstring darwin, $(GNUSTEP_TARGET_OS)), darwin)
++    SHOULD_LINK = "yes"
+ endif
+ ifeq ($(GNUSTEP_TARGET_OS),cygwin)
++    SHOULD_LINK = "yes"
++endif
++
++ifeq ($(SHOULD_LINK),"yes")
+ ADDITIONAL_LIB_DIRS += \
+         -L../../GormLib/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormObjCHeaderParser/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormPrefs/$(GNUSTEP_OBJ_DIR) \
+         -L../../GormCore/$(GNUSTEP_OBJ_DIR)
+ 
+-Nib_LIBRARIES_DEPEND_UPON += -lGorm -lGormCore
++ADDITIONAL_GUI_LIBS += -lGorm -lGormCore
+ endif
+\ No newline at end of file

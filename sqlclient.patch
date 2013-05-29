@@ -1,0 +1,223 @@
+diff --git a/ECPG.pgm b/ECPG.pgm
+index c4b5532..7be1424 100644
+--- a/ECPG.pgm
++++ b/ECPG.pgm
+@@ -557,10 +557,6 @@ static unsigned int trim(char *str)
+ 			  case SQL3_CHARACTER_VARYING:
+ 			    EXEC SQL GET DESCRIPTOR myDesc VALUE :index
+ 			      :aString = DATA;
+-                            if (_shouldTrim)
+-                              {
+-                                trim(aString);
+-                              }
+ 			    v = [NSString stringWithUTF8String: aString];
+ 			    free(aString);
+ 			    break;
+@@ -589,10 +585,6 @@ static unsigned int trim(char *str)
+ 			  default:
+ 			    EXEC SQL GET DESCRIPTOR myDesc VALUE :index
+ 			      :aString = DATA;
+-                            if (_shouldTrim)
+-                              {
+-                                trim(aString);
+-                              }
+ 			    v = [NSString stringWithUTF8String: aString];
+ 			    free(aString);
+ 			    if ([self debugging] > 0)
+diff --git a/MySQL.m b/MySQL.m
+index 7a6013b..d009e2f 100644
+--- a/MySQL.m
++++ b/MySQL.m
+@@ -265,30 +265,6 @@ static NSNull	*null = nil;
+   return rowCount;
+ }
+ 
+-static unsigned int trim(char *str)
+-{
+-  char	*start = str;
+-
+-  while (isspace(*str))
+-    {
+-      str++;
+-    }
+-  if (str != start)
+-    {
+-      strcpy(start, str);
+-    }
+-  str = start;
+-  while (*str != '\0')
+-    {
+-      str++;
+-    }
+-  while (str > start && isspace(str[-1]))
+-    {
+-      *--str = '\0';
+-    }
+-  return (str - start);
+-}
+-
+ - (NSMutableArray*) backendQuery: (NSString*)stmt
+ 		      recordType: (Class)rtype
+ 		        listType: (Class)ltype
+@@ -413,10 +389,6 @@ static unsigned int trim(char *str)
+ 			    }
+ 			    break;
+ 
+-			  case FIELD_TYPE_TINY:
+-			    v = [NSString stringWithFormat: @"%u", *p];
+-			    break;
+-
+ 			  case FIELD_TYPE_BLOB:
+ 			  case FIELD_TYPE_TINY_BLOB:
+ 			  case FIELD_TYPE_MEDIUM_BLOB:
+@@ -434,10 +406,6 @@ static unsigned int trim(char *str)
+ 			    break;
+ 
+ 			  default:
+-                            if (YES == _shouldTrim)
+-                              {
+-                                trim((char*)p);
+-                              }
+ 			    v = [NSString stringWithUTF8String: (char*)p];
+ 			    break;
+ 			}
+diff --git a/Oracle.pm b/Oracle.pm
+index de1fa9e..4b9515a 100644
+--- a/Oracle.pm
++++ b/Oracle.pm
+@@ -303,30 +303,6 @@ void SQLClientOracleErrorHandler()
+   return -1;
+ }
+ 
+-static unsigned int trim(char *str)
+-{
+-  char	*start = str;
+-
+-  while (isspace(*str))
+-    {
+-      str++;
+-    }
+-  if (str != start)
+-    {
+-      strcpy(start, str);
+-    }
+-  str = start;
+-  while (*str != '\0')
+-    {
+-      str++;
+-    }
+-  while (str > start && isspace(str[-1]))
+-    {
+-      *--str = '\0';
+-    }
+-  return (str - start);
+-}
+-
+ - (NSMutableArray*) backendQuery: (NSString*)stmt recordClass: (Class)rClass
+ {
+   EXEC SQL BEGIN DECLARE SECTION;
+@@ -554,10 +530,6 @@ static unsigned int trim(char *str)
+ 			  
+ 			  /* \0-pad the string.  */
+ 			  aString[octetLength] = '\0'; 
+-                          if (YES == _shouldTrim)
+-                            {
+-                              trim (aString);
+-                            }
+ 			  v = [NSString stringWithUTF8String: aString];
+ 			  free(aString);
+ 			  break;
+@@ -588,10 +560,6 @@ static unsigned int trim(char *str)
+ 			  EXEC SQL GET DESCRIPTOR 'myDesc' VALUE :index
+ 			    :aString = DATA;
+ 			  aString[octetLength] = '\0';
+-                          if (YES == _shouldTrim)
+-                            {
+-                              trim (aString);
+-                            }
+ 			  v = [NSString stringWithUTF8String: aString];
+ 			  free (aString);
+ 			  NSLog(@"(Oracle) Unknown data type (%d) for '%s': '%@'", 
+diff --git a/Postgres.m b/Postgres.m
+index f5efd18..d00309c 100644
+--- a/Postgres.m
++++ b/Postgres.m
+@@ -632,10 +632,6 @@ static unsigned int trim(char *str)
+ 
+                               case 25:          // TEXT
+ 			      default:
+-                                if (YES == _shouldTrim)
+-                                  {
+-                                    trim(p);
+-                                  }
+ 				v = [NSString stringWithUTF8String: p];
+ 				break;
+ 			    }
+diff --git a/SQLClient.h b/SQLClient.h
+index 03f1a63..2113967 100644
+--- a/SQLClient.h
++++ b/SQLClient.h
+@@ -369,12 +369,6 @@ SQLCLIENT_PRIVATE
+    * set by the -begin, -commit or -rollback methods.
+    */
+   BOOL			_inTransaction;	/** Are we inside a transaction? */
+-  /**
+-   * A flag indicating whether wleading and trailing white space in values
+-   * read from the database shoud automatically be removed.<br />
+-   * This should only be modified by the -setShouldTrim: method.
+-   */
+-  BOOL                  _shouldTrim;    /** Should whitespace be trimmed? */
+   NSString		*_name;		/** Unique identifier for instance */
+   NSString		*_client;	/** Identifier within backend */
+   NSString		*_database;	/** The configured database name/host */
+@@ -828,12 +822,6 @@ SQLCLIENT_PRIVATE
+  */
+ - (void) setPassword: (NSString*)s;
+ 
+-/** Sets an internal flag to indicate whether leading and trailing white
+- * space characters should be removed from values retrieved from the
+- * database by the receiver.
+- */
+-- (void) setShouldTrim: (BOOL)aFlag;
+-
+ /**
+  * Set the database user for this object.<br />
+  * This is called automatically to configure the connection ...
+@@ -1012,8 +1000,8 @@ SQLCLIENT_PRIVATE
+  * </p>
+  */
+ - (NSMutableArray*) backendQuery: (NSString*)stmt
+-		      recordType: (id)rtype
+-		        listType: (id)ltype;
++		      recordType: (Class)rtype
++		        listType: (Class)ltype;
+ 
+ /**
+  * Calls -backendQuery:recordType:listType: with the default record class
+diff --git a/SQLClient.m b/SQLClient.m
+index d838f58..a7aebe5 100644
+--- a/SQLClient.m
++++ b/SQLClient.m
+@@ -1843,11 +1843,6 @@ static unsigned int	maxConnections = 8;
+     }
+ }
+ 
+-- (void) setShouldTrim: (BOOL)aFlag
+-{
+-  _shouldTrim = (YES == aFlag) ? YES : NO;
+-}
+-
+ - (void) setUser: (NSString*)s
+ {
+   if ([s isEqual: _client] == NO)
+@@ -2063,8 +2058,8 @@ static unsigned int	maxConnections = 8;
+ }
+ 
+ - (NSMutableArray*) backendQuery: (NSString*)stmt
+-		      recordType: (id)rtype
+-		        listType: (id)ltype
++		      recordType: (Class)rtype
++		        listType: (Class)ltype
+ {
+   [NSException raise: NSInternalInconsistencyException
+ 	      format: @"Called -%@ without backend bundle loaded",

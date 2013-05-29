@@ -1,0 +1,58 @@
+diff --git a/encoding2.c b/encoding2.c
+index 439c5ac..5593b81 100644
+--- a/encoding2.c
++++ b/encoding2.c
+@@ -525,6 +525,20 @@ void objc_layout_structure_get_info (struct objc_struct_layout *layout,
+ 	*offset = (unsigned int)off;
+ }
+ 
++void objc_layout_finish_structure (struct objc_struct_layout *layout,
++                                   unsigned int *size,
++                                   unsigned int *align)
++{
++    if (size)
++    {
++        // todo: guess what?
++    }
++    if (align)
++    {
++        // todo: --//--
++    }
++}
++
+ #ifdef ENCODING_TESTS
+ 
+ #define TEST(type) do {\
+diff --git a/objc/encoding.h b/objc/encoding.h
+index 4c4ff53..0ee735d 100644
+--- a/objc/encoding.h
++++ b/objc/encoding.h
+@@ -62,6 +62,10 @@ void objc_layout_structure_get_info (struct objc_struct_layout *layout,
+                                      unsigned int *align,
+                                      const char **type);
+ 
++void objc_layout_finish_structure (struct objc_struct_layout *layout,
++                                   unsigned int *size,
++                                   unsigned int *align);
++
+ #define _F_CONST       0x01
+ #define _F_IN          0x01
+ #define _F_OUT         0x02
+diff --git a/objc/runtime.h b/objc/runtime.h
+index 3092f72..0770110 100644
+--- a/objc/runtime.h
++++ b/objc/runtime.h
+@@ -204,11 +204,11 @@ typedef struct
+ #endif
+ 
+ #ifndef nil
+-#	define nil ((id)_OBJC_NULL_PTR)
++#	define nil _OBJC_NULL_PTR
+ #endif
+ 
+ #ifndef Nil
+-#	define Nil ((Class)_OBJC_NULL_PTR)
++#	define Nil _OBJC_NULL_PTR
+ #endif
+ 
+ #include "slot.h"
